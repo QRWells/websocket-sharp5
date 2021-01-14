@@ -1,0 +1,130 @@
+#region License
+
+/*
+ * LogData.cs
+ *
+ * The MIT License
+ *
+ * Copyright (c) 2013-2015 sta.blockhead
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#endregion
+
+using System;
+using System.Diagnostics;
+using System.Text;
+
+namespace WebSocketSharp
+{
+    /// <summary>
+    /// Represents a log data used by the <see cref="Logger"/> class.
+    /// </summary>
+    public class LogData
+    {
+        #region Private Fields
+
+        #endregion
+
+        #region Internal Constructors
+
+        internal LogData(LogLevel level, StackFrame caller, string message)
+        {
+            Level = level;
+            Caller = caller;
+            Message = message ?? string.Empty;
+            Date = DateTime.Now;
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the information of the logging method caller.
+        /// </summary>
+        /// <value>
+        /// A <see cref="StackFrame"/> that provides the information of the logging method caller.
+        /// </value>
+        public StackFrame Caller { get; }
+
+        /// <summary>
+        /// Gets the date and time when the log data was created.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DateTime"/> that represents the date and time when the log data was created.
+        /// </value>
+        public DateTime Date { get; }
+
+        /// <summary>
+        /// Gets the logging level of the log data.
+        /// </summary>
+        /// <value>
+        /// One of the <see cref="LogLevel"/> enum values, indicates the logging level of the log data.
+        /// </value>
+        public LogLevel Level { get; }
+
+        /// <summary>
+        /// Gets the message of the log data.
+        /// </summary>
+        /// <value>
+        /// A <see cref="string"/> that represents the message of the log data.
+        /// </value>
+        public string Message { get; }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="string"/> that represents the current <see cref="LogData"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string"/> that represents the current <see cref="LogData"/>.
+        /// </returns>
+        public override string ToString()
+        {
+            var header = $"{Date}|{Level,-5}|";
+            var method = Caller.GetMethod();
+            var type = method.DeclaringType;
+#if DEBUG
+            var lineNum = Caller.GetFileLineNumber();
+            var headerAndCaller =
+                $"{header}{type.Name}.{method.Name}:{lineNum}|";
+#else
+            var headerAndCaller = String.Format ("{0}{1}.{2}|", header, type.Name, method.Name);
+#endif
+            var msgs = Message.Replace("\r\n", "\n").TrimEnd('\n').Split('\n');
+            if (msgs.Length <= 1)
+                return $"{headerAndCaller}{Message}";
+
+            var buff = new StringBuilder($"{headerAndCaller}{msgs[0]}\n", 64);
+
+            var fmt = $"{{0,{header.Length}}}{{1}}\n";
+            for (var i = 1; i < msgs.Length; i++)
+                buff.AppendFormat(fmt, "", msgs[i]);
+
+            buff.Length--;
+            return buff.ToString();
+        }
+
+        #endregion
+    }
+}

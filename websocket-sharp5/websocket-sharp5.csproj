@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Description>websocket-sharp port to net standart</Description>
+    <Authors />
+    <Company />
+    <Product />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>websocket-sharp5</PackageId>
+    <Version>1.0.0</Version>
+    <RootNamespace>websocket-sharp</RootNamespace>
+  </PropertyGroup>
+
+</Project>
